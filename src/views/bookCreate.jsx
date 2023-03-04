@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import {styles} from './BookGenerator.css';
 
 
+
 export function BookGenerator() {
   const [bookTitle, setBookTitle] = useState('');
   const [bookSubtitle, setBookSubtitle] = useState('');
@@ -18,11 +19,11 @@ export function BookGenerator() {
 
     const prompt = `${bookTitle}\n${bookSubtitle}\n\n${bookDescription}\n\nGenerate 10 chapter titles for this book.`;
 
-    const response = await axios.post('https://api.chatgpt.com/generate', {
-      api_key: 'YOUR_API_KEY',
+    const response = await axios.post('/api/generate', {
+      api_key: `${process.env.OPENAI_API_KEY}`,
       model: 'chatgpt-3.5',
       prompt: prompt,
-      length: 10,
+      length: 500,
     });
 
     const generatedChapterTitles = response.data.results;
@@ -32,8 +33,8 @@ export function BookGenerator() {
   async function handleWriteChapter(title, description) {
     const prompt = `${bookTitle}\n${bookSubtitle}\n\n${bookDescription}\n\n${title}\n${description}\n\nWrite a chapter for this book.`;
 
-    const response = await axios.post('https://api.chatgpt.com/generate', {
-      api_key: 'YOUR_API_KEY',
+    const response = await axios.post('/api/generate', {
+      api_key: `${process.env.OPENAI_API_KEY}`,
       model: 'chatgpt-3.5',
       prompt: prompt,
       length: 1024,
