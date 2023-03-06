@@ -32,10 +32,10 @@ export function BookGenerator() {
         temperature:.5,
     
       });
-      console.log(response.data.choices[0].text);
+      console.log(response.data.choices[0].text.split('\n'));
       
 
-    const generatedChapterTitles = response.data.results;
+    const generatedChapterTitles = response.data.choices[0].text.split('\n');
     setChapterTitles(generatedChapterTitles);
   }
 
