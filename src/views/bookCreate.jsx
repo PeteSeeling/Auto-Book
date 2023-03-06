@@ -6,6 +6,7 @@ import {styles} from './BookGenerator.css';
 
 
 
+
 export function BookGenerator() {
   const [bookTitle, setBookTitle] = useState('');
   const [bookSubtitle, setBookSubtitle] = useState('');
@@ -13,25 +14,33 @@ export function BookGenerator() {
   const [chapterTitles, setChapterTitles] = useState([]);
   const [chapterContent, setChapterContent] = useState('');
   const [bookContent, setBookContent] = useState('');
+  const { Configuration, OpenAIApi } = require("openai");
+  const configuration = new Configuration({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+  const openai = new OpenAIApi(configuration);
 
   async function handleGenerateChapterTitles(event) {
     event.preventDefault();
 
-    const prompt = `${bookTitle}\n${bookSubtitle}\n\n${bookDescription}\n\nGenerate 10 chapter titles for this book.`;
+    const prompt = `${bookTitle}\n${bookSubtitle}\n\n${bookDescription}\n\n Write 10 chapter titles for this book. `;
 
-    const response = await axios.post('/api/generate', {
-      api_key: `${process.env.OPENAI_API_KEY}`,
-      model: 'chatgpt-3.5',
-      prompt: prompt,
-      length: 500,
-    });
+    const response = await openai.createCompletion({
+        model: 'text-davinci-003',
+        prompt: prompt,
+        max_tokens: 4000,
+        temperature:.5,
+    
+      });
+      console.log(response.data.choices[0].text);
+      
 
     const generatedChapterTitles = response.data.results;
     setChapterTitles(generatedChapterTitles);
   }
 
   async function handleWriteChapter(title, description) {
-    const prompt = `${bookTitle}\n${bookSubtitle}\n\n${bookDescription}\n\n${title}\n${description}\n\nWrite a chapter for this book.`;
+    const prompt = `${bookTitle}\n${bookSubtitle}\n\n${bookDescription}\n\n${title}\n${description}\n\nWrite a chapter for this book. Write 2,000 words. If you are out of tokens write {ContinueChapterNext} as the last word if the chapter is about 2000 words write {chapterComplete as the last word}`;
 
     const response = await axios.post('/api/generate', {
       api_key: `${process.env.OPENAI_API_KEY}`,
@@ -40,6 +49,7 @@ export function BookGenerator() {
       length: 1024,
     });
 
+    console.log(response.data.choices[0].text);
     const chapterContent = response.data.results[0];
     setChapterContent(chapterContent);
   }
