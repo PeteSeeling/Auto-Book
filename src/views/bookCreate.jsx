@@ -13,7 +13,7 @@ export function BookGenerator() {
   const [bookDescription, setBookDescription] = useState('');
   const [chapterTitles, setChapterTitles] = useState([]);
   const [chapterContent, setChapterContent] = useState('');
-  const [bookContent, setBookContent] = useState('');
+  const [bookContent, setBookContent] = useState(['']);
   const { Configuration, OpenAIApi } = require("openai");
   const configuration = new Configuration({
     apiKey: process.env.OPENAI_API_KEY,
@@ -42,15 +42,16 @@ export function BookGenerator() {
   async function handleWriteChapter(title, description) {
     const prompt = `${bookTitle}\n${bookSubtitle}\n\n${bookDescription}\n\n${title}\n${description}\n\nWrite a chapter for this book. Write 2,000 words. If you are out of tokens write {ContinueChapterNext} as the last word if the chapter is about 2000 words write {chapterComplete as the last word}`;
 
-    const response = await axios.post('/api/generate', {
-      api_key: `${process.env.OPENAI_API_KEY}`,
-      model: 'chatgpt-3.5',
-      prompt: prompt,
-      length: 1024,
-    });
+    const response = await openai.createCompletion({
+        model: 'text-davinci-003',
+        prompt: prompt,
+        max_tokens: 4000,
+        temperature:.5,
+    
+      });
+      console.log(response.data.choices[0].text.split('\n'));
 
-    console.log(response.data.choices[0].text);
-    const chapterContent = response.data.results[0];
+    const chapterContent = response.data.choices[0].text.split('\n');
     setChapterContent(chapterContent);
   }
 
@@ -74,10 +75,16 @@ export function BookGenerator() {
   }
 
   function handleChapterClick(title, description) {
-    handleWriteChapter(title, description);
-    const newChapter = `${title}\n\n${chapterContent}\n\n`;
-    setBookContent(bookContent => bookContent + newChapter);
+    handleWriteChapter(title, description)
+      .then(chapterContent => {
+        const newChapter = `${title}\n\n${chapterContent}\n\n`;
+        setBookContent(bookContent => bookContent + newChapter);
+      })
+      .catch(error => {
+        console.error('Error writing chapter:', error);
+      });
   }
+  
 
   return (
     <div className="BookGenerator">
@@ -99,8 +106,10 @@ export function BookGenerator() {
       <div className="ChapterTitles">
         {chapterTitles.map((title, index) => (
           <div key={uuidv4()}>
+            <span>
             <div>{title}</div>
             <button onClick={() => handleChapterClick(title, '')}>Write Chapter</button>
+            </span>
           </div>
         ))}
       </div>
