@@ -18,40 +18,39 @@ export function BookGenerator() {
   const configuration = new Configuration({
     apiKey: process.env.OPENAI_API_KEY,
   });
+  
   const openai = new OpenAIApi(configuration);
-
+  
   async function handleGenerateChapterTitles(event) {
     event.preventDefault();
-
-    const prompt = `${bookTitle}\n${bookSubtitle}\n\n${bookDescription}\n\n Write 10 chapter titles for this book. `;
-
+  
+    const prompt = `${bookTitle}\n${bookSubtitle}\n\n${bookDescription}\n\n Write 10 chapter titles for this book.`;
+  
     const response = await openai.createCompletion({
-        model: 'text-davinci-003',
-        prompt: prompt,
-        max_tokens: 4000,
-        temperature:.5,
-    
-      });
-      console.log(response.data.choices[0].text.split('\n'));
-      
-
+      model: 'gpt-3.5-turbo',
+      message: [{role: "user", content: "Hello world"}],
+   
+    });
+    console.log(completion.data.choices[0].message);
+  
     const generatedChapterTitles = response.data.choices[0].text.split('\n');
     setChapterTitles(generatedChapterTitles);
   }
+  
 
   async function handleWriteChapter(title, description) {
-    const prompt = `${bookTitle}\n${bookSubtitle}\n\n${bookDescription}\n\n${title}\n${description}\n\nWrite a chapter for this book. Write 2,000 words. If you are out of tokens write {ContinueChapterNext} as the last word if the chapter is about 2000 words write {chapterComplete as the last word}`;
+    const prompt = `${bookTitle}\n${bookSubtitle}\n\n${bookDescription}\n\n${title}\n${description}\n\nWrite a chapter for this book. Write a minimum of 3000 tokens and a maximum of 4,000  tokens per chapter. If you are out of tokens write {ContinueChapterNext} as the last word if the chapter is about 2000 words write {chapterComplete} as the last word`;
 
-    const response = await openai.createCompletion({
-        model: 'text-davinci-003',
+    const response = await openai.createCompletion.create({
+        model: 'gpt-3.5-turbo',
         prompt: prompt,
         max_tokens: 4000,
         temperature:.5,
     
       });
-      console.log(response.data.choices[0].text.split('\n'));
+      console.log(response.data.choices[0].text);
 
-    const chapterContent = response.data.choices[0].text.split('\n');
+    const chapterContent = response.data.choices[0].text;
     setChapterContent(chapterContent);
   }
 
